@@ -1,5 +1,7 @@
-﻿# Variables globales
+# Variables globales
 import random, os, time, sys
+import tkinter as tk
+from PIL import ImageTk, Image
 
 
 COULEURS = ('pic', 'coeur', 'carreau', 'trefle')
@@ -152,7 +154,6 @@ class Bataille:
     #     et le nombre de tours limite de jeu (nbt). Ce constructeur initialise les deux jeux de joueurs (carteJ1 et cartesJ2) en distribuant les cartes à partir
     #     d'un jeu complet de carte (classe JeauCartes) qu'il a d'abord construit et mélangé.
     #     -	jouer : partie jouée (tours de jeux jusqu'à la victoire d'un joueur dans la limite de nbtours et affichage des résultats)
-    
     def __init__(self, nbt = 100000, nbc = 26, CLI=False) :
         assert nbc <= 26 , 'Cannot play with more than 52 cards'
         self._nbc = nbc
@@ -167,6 +168,26 @@ class Bataille:
             self._cartesJ1.addcard(jeu.distrib())
         for _ in range(nbc) :
             self._cartesJ2.addcard(jeu.distrib())
+        if self._CLI == False :
+            root = tk.Tk()
+            blankimg = ImageTk.PhotoImage(Image.open('blank.jpg'))
+            root.geometry('1000x1000')
+            # root.iconphoto(False, 'icon.jpg')
+            statementlabel = tk.Label(root, text='No player has played yet')
+            statementlabel.pack(padx='500',pady='900')
+            player1label = tk.Label(root, text='Ludwig')
+            player1label.pack(padx='100', pady='800')
+            player2label = tk.Label(root, text='Carl')
+            player2label.pack(padx='800', pady='800')
+            c1label = tk.Label(root, image=blankimg)
+            c1label.pack(padx='50',pady='200')
+            c2label = tk.Label(root, image=blankimg)
+            c2label.pack(padx='700',pady='200')
+            root.mainloop()
+
+    def getfiledic(self) :
+        return {fname:ImageTk.PhotoImage(Image.open(fname)) for fname in self._filenames}
+
 
     def jouer(self) :          
         for _ in range(self._nbt) :
