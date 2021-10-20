@@ -20,7 +20,7 @@ class Pile :
         if self._storage == [] : #on renvoie none si la pile est vide
             return None
         return(self._storage.pop(0))
-    def empile(self, elem) :
+    def stack(self, elem) :
         self._storage.insert(0, elem)
 
     def elems(self) : #méthode "triche" utilisée pour afficher la pile jeucartes plus tard
@@ -98,7 +98,7 @@ class JeuCartes:
             self._jeu = Pile()
             for c in COULEURS :
                 for v in VALEURS :
-                    self._jeu.empile(Carte(c,v))
+                    self._jeu.stack(Carte(c,v))
 
     def melange(self) :
         self._jeu.shufflestack()
@@ -168,25 +168,10 @@ class Bataille:
             self._cartesJ1.addcard(jeu.distrib())
         for _ in range(nbc) :
             self._cartesJ2.addcard(jeu.distrib())
-        if self._CLI == False :
-            root = tk.Tk()
-            blankimg = ImageTk.PhotoImage(Image.open('blank.jpg'))
-            root.geometry('1000x1000')
-            # root.iconphoto(False, 'icon.jpg')
-            statementlabel = tk.Label(root, text='No player has played yet')
-            statementlabel.pack(padx='500',pady='900')
-            player1label = tk.Label(root, text='Ludwig')
-            player1label.pack(padx='100', pady='800')
-            player2label = tk.Label(root, text='Carl')
-            player2label.pack(padx='800', pady='800')
-            c1label = tk.Label(root, image=blankimg)
-            c1label.pack(padx='50',pady='200')
-            c2label = tk.Label(root, image=blankimg)
-            c2label.pack(padx='700',pady='200')
-            root.mainloop()
 
     def getfiledic(self) :
-        return {fname:ImageTk.PhotoImage(Image.open(fname)) for fname in self._filenames}
+        back = tk.Tk()
+        return {fname:ImageTk.PhotoImage(Image.open(CARD_DIR+fname)) for fname in self._filenames}
 
 
     def jouer(self) :          
@@ -197,60 +182,101 @@ class Bataille:
                 c1.display()
                 print(' VS ', end='')
                 c2.display()
+            else :
+                filedic = self.getfiledic()
+                print(filedic)
+                
             if c1.compare(c2) == 2 :
                 #la carte 1 l'emporte
-                self._cartesJ1.addcard(c1)
-                self._cartesJ1.addcard(c2)
                 if self._CLI :
                     print(' : Player Ludwig wins the round')
+                else :
+                    displaywindow(statement='Ludwig won this round', cardimg1=filedic[c1.getfilename()], cardimg2=filedic[c2.getfilename()])
+
+
             if c1.compare(c2) == 1 :
                 #la carte 2 l'emporte
-                self._cartesJ2.addcard(c1)
-                self._cartesJ2.addcard(c2)
                 if self._CLI :
                     print(' : Player Carl wins the round')
+                else :
+                    displaywindow(statement='Carl won this round', cardimg1=filedic[c1.getfilename()], cardimg2=filedic[c2.getfilename()])
+
+            
             if c1.compare(c2) == 0 :
                 #égalité : on sort les deux cartes du jeu, donc on ne fait rien
                 if self._CLI :
-                    print('Égalité')
-                    sys.Exit()
+                    print('Draw')
+                else :
+                    displaywindow(statement='This round is draw', cardimg1=filedic[c1.getfilename()], cardimg2=filedic[c2.getfilename()])
+
 
             if self._cartesJ1.isempty() :                
                 if self._CLI :
-                    print('Égalité')
-                    sys.Exit(1)
-                return 'Ludwig'
+                    print('Carl won the game')
+                    sys.exit(0)
+                else :
+                    # self.statementlabel.configure(text='Carl won the game')
+                    displaywindow(statement='Carl won the game !', cardimg1=filedic[c1.getfilename()], cardimg2=filedic[c2.getfilename()])
+                    sys.exit(0)
 
             if self._cartesJ2.isempty() :
                 if self._CLI :
-                    print('Égalité')
-                    sys.Exit(1)
-                return 'Carl'
+                    print('Ludwig won the game')
+                    sys.exit(0)
+                else :
+                    displaywindow(statement='Ludwig won the game !', cardimg1=filedic[c1.getfilename()], cardimg2=filedic[c2.getfilename()])
+                    sys.exit(0)
 
-            time.sleep(5)
 
         if self._cartesJ1.length() > self._cartesJ2.length() :
             if self._CLI :
-                    print('Player Ludwig won the round')
-                    sys.exit()
-            return 'Ludwig'
+                    print('Player Ludwig won the game')
+                    sys.exit(0)
+            else :
+                displaywindow(statement='Ludwig won the game !', cardimg1=filedic[c1.getfilename()], cardimg2=filedic[c2.getfilename()])
+                sys.exit(0)
 
         if self._cartesJ2.length() > self._cartesJ1.length() :
             if self._CLI :
                     print('Player Carl won this game')
-                    sys.exit()
-            return 'Carl'
+                    sys.exit(0)
+            else :
+                # self.statementlabel.configure(text='Carl wins the game')
+                displaywindow(statement='Carl won the game !', cardimg1=filedic[c1.getfilename()], cardimg2=filedic[c2.getfilename()])
+                sys.exit(0)
 
         if self._cartesJ1.length() == self._cartesJ2.length() :
             if self._CLI :
                     print('Égalité')
-                    sys.exit()
-            return 'Égalité'
+                    sys.exit(0)
+            else :
+                # self.statementlabel.configure(text='The game is draw')
+                displaywindow(statement='The game is draw !', cardimg1=filedic[c1.getfilename()], cardimg2=filedic[c2.getfilename()])
+                sys.exit(0)
+
+def displaywindow(statement, cardimg1, cardimg2) :
+    root = tk.Tk()
+    root.geometry('1200x1000')
+    root.resizable(0,0)
+        # root.iconphoto(False, ImageTk.PhotoImage(Image.open('icon.jpg')))
+    statementlabel = tk.Label(root, text=statement, font='Helvetica 40 bold')
+    statementlabel.pack(side='top')
+    player1label = tk.Label(root, font='Helvetica 20', text='Ludwig')
+    player1label.place(x=130, y=250)
+    player2label = tk.Label(root, font='Helvetica 20', text='Carl')
+    player2label.place(x=990, y=250)
+    c1label = tk.Label(root, image=cardimg1)
+    c1llabel.pack(side='left')
+    c2label = tk.Label(root, image=cardimg2)
+    c2label.pack(side='right')
+    next_turn = tk.Button(root, command=root.destroy)
+    next_turn.place(x=500, y=250)
+    root.mainloop()
+
 
 def main() :
     game = Bataille(nbt=10, nbc=10, CLI='-cli' in sys.argv)
-    rslt = game.jouer()
-    print(rslt)
+    game.jouer()
 
 main()
 
